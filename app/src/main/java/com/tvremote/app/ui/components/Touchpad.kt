@@ -40,14 +40,22 @@ fun Touchpad(
             .background(RemoteColors.PadBg, RoundedCornerShape(22.dp))
             .pointerInput(Unit) {
                 var accumulated = Offset.Zero
+                // Only one direction command per touch — otherwise a single
+                // real-world swipe (which easily covers more than thresholdPx)
+                // ends up firing 2-3 times and the TV jumps multiple steps
+                // for what felt like one gesture.
+                var fired = false
                 detectDragGestures(
-                    onDragStart = { accumulated = Offset.Zero },
+                    onDragStart = { accumulated = Offset.Zero; fired = false },
+                    onDragEnd = { accumulated = Offset.Zero; fired = false },
+                    onDragCancel = { accumulated = Offset.Zero; fired = false },
                     onDrag = { change, dragAmount ->
                         change.consume()
+                        if (fired) return@detectDragGestures
                         accumulated += dragAmount
                         if (kotlin.math.abs(accumulated.x) > thresholdPx || kotlin.math.abs(accumulated.y) > thresholdPx) {
                             onDirection(accumulated.x.toInt(), accumulated.y.toInt())
-                            accumulated = Offset.Zero
+                            fired = true
                         }
                     }
                 )
