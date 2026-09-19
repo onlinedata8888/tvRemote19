@@ -116,11 +116,14 @@ fun RemoteScreen(viewModel: RemoteViewModel = viewModel()) {
             onSubmit = viewModel::submitPairingCode,
             onCancel = viewModel::cancelPairing
         )
-    } else if (state.connectionState == ConnectionState.ERROR && state.errorMessage != null) {
-        PairingErrorDialog(
-            message = state.errorMessage,
-            onRetry = viewModel::retryPairing,
-            onCancel = viewModel::cancelPairing
-        )
+    } else {
+        val errorMessage = state.errorMessage
+        if (state.connectionState == ConnectionState.ERROR && errorMessage != null) {
+            PairingErrorDialog(
+                message = errorMessage,
+                onRetry = viewModel::retryPairing,
+                onCancel = viewModel::cancelPairing
+            )
+        }
     }
 }
